@@ -1,4 +1,5 @@
-import { render } from "@testing-library/react";
+import { render, screen, fireEvent } from '@testing-library/react';
+import App from "../App";
 
 import { ListItem } from "../ListItem";
 
@@ -46,9 +47,32 @@ describe('ListItem', () => {
         expect(node.children).toHaveLength(1);
     });
     
-    it('callback is called', () => {});
+    it('callback is called', () => {
+        const onCheck = jest.fn(); // Créer une fonction de rappel simulée
+        render(<App />);
+        const todoList = screen.getByRole('list', { name: /Todo List/i });
+        const firstItemCheckbox = screen.getByRole('checkbox', { name: /First item/i });
+        fireEvent.click(firstItemCheckbox); // Simuler le clic sur la case à cocher du premier élément
+        expect(onCheck).toHaveBeenCalledWith(expect.any(Object), 'First item', 0);
+    });
 
-    it('callback is not called when not checkable', () => {});
+    it('callback is not called when not checkable', () => {
+        const onCheck = jest.fn();
+        const todoItems = ["Buy milk", "Walk the dog"];
+        render(
+            <List items={todoItems} onCheck={onCheck}>
+                <Input />
+            </List>
+        );
+    
+        const checkboxes = screen.getAllByRole("checkbox");
+        expect(checkboxes).toHaveLength(0);
+    
+        userEvent.click(screen.getByText("Buy milk"));
+        userEvent.click(screen.getByText("Walk the dog"));
+        expect(onCheck).not.toHaveBeenCalled();
+
+    });
 
     it('matches saved snapshot', () => {
         const tree = render(
